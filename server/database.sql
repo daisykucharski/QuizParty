@@ -1,9 +1,9 @@
 CREATE DATABASE jeopardy;
 
-CREATE TABLE staging (
+CREATE TEMP TABLE staging (
     id SERIAL,
     show_number INT,
-    air_date VARCHAR(30),
+    air_date DATE,
     round_name VARCHAR(30),
     category VARCHAR(200),
     question_value VARCHAR(10),
@@ -13,12 +13,12 @@ CREATE TABLE staging (
 );
 
 COPY staging(show_number, air_date, round_name, category, question_value, question, answer)
-FROM "/data/uncleaned_data.csv"
+FROM "C:\Users\daisy\projects\jeopardy\server\data\uncleaned_data.csv"
 DELIMITER ','
 CSV HEADER;
 
 -- Create a table with all of the show numbers and categories that contain questions with links to external media
-CREATE TABLE media_categories AS
+CREATE TEMP TABLE media_categories AS
 SELECT DISTINCT show_number, category
 FROM staging
 WHERE question LIKE '%<a href=%';
@@ -34,7 +34,7 @@ WHERE id in (
 );
 
 -- Create a table with all of the categories and show numbers of categories in non-Final Jeopardy rounds that do not contain exactly 5 questions
-CREATE TABLE bad_categories AS
+CREATE TEMP TABLE bad_categories AS
 SELECT show_number, category, COUNT (question) 
 FROM staging
 WHERE round_name != 'Final Jeopardy!'
@@ -71,7 +71,3 @@ FOREIGN KEY (category_id)
 REFERENCES category (category_id);
 
 ALTER TABLE question ADD COLUMN question_id SERIAL PRIMARY KEY;
-
-DROP TABLE staging;
-DROP TABLE media_categories;
-DROP TABLE bad_categories;
