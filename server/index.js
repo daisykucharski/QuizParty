@@ -34,7 +34,7 @@ app.get("/finaljeopardy/:year", async (req, res) => {
 async function getNormalRound(res, round_name, earliest_year) {
   try {
     const selectedCategories = await pool.query(
-      "SELECT * FROM category WHERE round_name = $1 AND EXTRACT(YEAR FROM air_date) > $2 ORDER BY random() LIMIT 5",
+      "SELECT * FROM category WHERE round_name = $1 AND EXTRACT(YEAR FROM air_date) > $2 ORDER BY random() LIMIT 6",
       [round_name, earliest_year]
     );
 
