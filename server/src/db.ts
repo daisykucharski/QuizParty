@@ -9,4 +9,4 @@ const pool = new Pool({
     database: "jeopardy"
 });
 
-module.exports = pool;
+export default pool;
