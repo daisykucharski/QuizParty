@@ -1,16 +1,16 @@
-export interface Question {
-    question: string;
-    answer: string;
-    value: number;
+export interface Clue {
+  question: string;
+  answer: string;
+  value: number;
 }
 
 export interface JeopardyCategory {
-    category: string;
-    questions: Question[];
+  category: string;
+  questions: Clue[];
 }
 
-export interface FinalJeopardyQuestion {
-    category: string;
-    question: string;
-    answer: string;
+export interface FinalJeopardyClue {
+  category: string;
+  question: string;
+  answer: string;
 }
