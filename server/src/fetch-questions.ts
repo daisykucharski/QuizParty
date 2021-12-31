@@ -1,8 +1,11 @@
 import pool from "./db";
-import {Question, JeopardyCategory, FinalJeopardyQuestion} from "./types"
+import { Clue, JeopardyCategory, FinalJeopardyClue } from "./types";
 
-
-async function getBoard(round_name: string, starting_value: number, earliest_year: number): Promise<JeopardyCategory[]> {
+async function getBoard(
+  round_name: string,
+  starting_value: number,
+  earliest_year: number
+): Promise<JeopardyCategory[]> {
   try {
     const selectedCategories = await pool
       .query(
@@ -25,7 +28,7 @@ async function getBoard(round_name: string, starting_value: number, earliest_yea
         )
         .then((resp) => resp.rows);
 
-      const questionsWithValues: Question[] = [];
+      const questionsWithValues: Clue[] = [];
 
       for (let j = 1; j <= 5; j++) {
         const question = questions[j - 1];
@@ -44,7 +47,9 @@ async function getBoard(round_name: string, starting_value: number, earliest_yea
   }
 }
 
-async function getFinalJeopardyQuestion(earliest_year:number): Promise<FinalJeopardyQuestion> {
+async function getFinalJeopardyQuestion(
+  earliest_year: number
+): Promise<FinalJeopardyClue> {
   try {
     const category = await pool
       .query(
