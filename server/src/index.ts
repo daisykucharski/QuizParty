@@ -105,6 +105,31 @@ io.on("connection", (socket: Socket) => {
   socket.on("start", () => {
     game.startNextRound().then(() => io.emit("startRound", game.getData()));
   });
+
+  socket.on("disconnect", () => {
+    // Find the rooms that the socket is connected to
+    // the second one is the room for the game
+    const currentRoom = Object.keys(socket.rooms)[1];
+    const game = rooms.get(currentRoom);
+
+    if (!game) {
+      return;
+    }
+
+    // find the player with the given socket id
+    const player = game
+      ?.getPlayers()
+      .filter((player) => player.socketid === socket.id)[0];
+
+    game?.removePlayer(player);
+
+    // if there are no more players in the game, remove the game from memory
+    // and notify the display to return to the starting page
+    if (game.getPlayers().length === 0 && rooms.has(currentRoom)) {
+      io.to(currentRoom).emit("gameError");
+      rooms.delete(currentRoom);
+    }
+  });
 });
 
 httpServer.listen(5000, () => console.log("Listening on port 5000"));

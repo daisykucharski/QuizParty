@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import socketIOClient from "socket.io-client";
 import { ViewData, Clues, Player, JeopardyCategory } from "../../types";
 
@@ -13,10 +14,13 @@ const ENDPOINT = "http://192.168.56.1:5000";
  * @returns the component for the display page
  */
 const Display = () => {
+  const navigate = useNavigate();
+
   useEffect(() => {
     const socket = socketIOClient(ENDPOINT);
     socket.emit("start");
     socket.on("startRound", handleStartRound);
+    socket.on("gameError", () => navigate("/"));
 
     return () => {
       socket.disconnect();

@@ -1,11 +1,8 @@
-import React from 'react'
+import React from "react";
+const ENDPOINT = "http://192.168.56.1:5000";
 
 const Player = () => {
-    return (
-        <div>
-            
-        </div>
-    )
-}
+  return <div></div>;
+};
 
-export default Player
+export default Player;

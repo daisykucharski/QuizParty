@@ -6,7 +6,7 @@ export const generateRandomCode = (): string => {
   var result = "";
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-  for (var i = 0; i < 16; i++) {
+  for (var i = 0; i < 6; i++) {
     result += chars[Math.floor(Math.random() * 26)];
   }
 
