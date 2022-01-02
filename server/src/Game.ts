@@ -9,7 +9,7 @@ class Game {
   dailyDoubles: DailyDouble[];
   players: Player[];
   playerInControl: Player;
-  round: 0;
+  round: number;
 
   constructor() {
     this.clues = [];
@@ -51,11 +51,22 @@ class Game {
   }
 
   /**
-   * Determines how many players are in this game
-   * @returns the number of players in this game
+   * Kicks the given player from the game
+   * @param playerToRemove the player to remove
    */
-  getNumPlayers(): number {
-    return this.players.length;
+  removePlayer(playerToRemove: Player) {
+    const newPlayers = this.players.filter(
+      (player) => player.name !== playerToRemove.name
+    );
+    this.players = newPlayers;
+  }
+
+  /**
+   * Returns a list of players in this game
+   * @returns the players in this game
+   */
+  getPlayers(): Player[] {
+    return this.players;
   }
 
   /**
