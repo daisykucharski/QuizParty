@@ -1,19 +1,24 @@
 import React from "react";
+import { JeopardyCategory } from "../../types";
 
-function Board({ clues }) {
+interface CluesProps {
+  clues: JeopardyCategory[];
+}
+
+function Board({ clues }: CluesProps) {
   return (
     <div className="board">
-      {clues.map((category, index: number) => {
-        const { name, clues } = category;
+      {clues.map((column, index: number) => {
+        const { category, questions } = column;
 
         return (
           <div className="category" key={index}>
             <div className="category-title">
-              <p>{name}</p>
+              <p>{category}</p>
             </div>
-            {clues.map((clue: number, index: number) => (
+            {questions.map((clue, index: number) => (
               <div className="clue" key={index}>
-                <p>{clue ? `$${clue}` : ""}</p>
+                <p>{clue ? `$${clue.value}` : ""}</p>
               </div>
             ))}
           </div>

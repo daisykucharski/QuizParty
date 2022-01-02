@@ -1,15 +1,21 @@
 import React, { useEffect, useState } from "react";
 import socketIOClient from "socket.io-client";
+import { ViewData, Clues, Player, JeopardyCategory } from "../../types";
 
 import Board from "../functional/Board";
 import Header from "../functional/Header";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 
+/**
+ * This component represents the display page of the application. This is
+ * the page that shows the Jeopardy clues
+ * @returns the component for the display page
+ */
 const Display = () => {
   useEffect(() => {
     const socket = socketIOClient(ENDPOINT);
-    socket.emit("nextRound");
+    socket.emit("start");
     socket.on("startRound", handleStartRound);
 
     return () => {
@@ -17,24 +23,20 @@ const Display = () => {
     };
   }, []);
 
-  const exampleClues = [
-    {
-      name: "abdsfa",
-      clues: [200, null, 600, 800, 1000],
-    },
-    { name: "abdsfaabdsfa", clues: [200, 400, 600, 800, 1000] },
-    { name: "3", clues: [200, 400, 600, 800, 1000] },
-    { name: "4", clues: [null, 400, 600, 800, 1000] },
-    { name: "5", clues: [200, 400, 600, 800, 1000] },
-    { name: "6", clues: [200, 400, 600, 800, 1000] },
-  ];
-
-  const [clues, setClues] = useState(exampleClues);
-  const [players, setPlayers] = useState([]);
-  const [playerInControl, setPlayerInControl] = useState(null);
+  const [clues, setClues] = useState<Clues>([]);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [playerInControl, setPlayerInControl] = useState<Player>({
+    name: "",
+    earnings: 0,
+  });
   const [round, setRound] = useState(0);
 
-  const handleStartRound = ({ clues, players, playerInControl, round }) => {
+  const handleStartRound = ({
+    clues,
+    players,
+    playerInControl,
+    round,
+  }: ViewData) => {
     setClues(clues);
     setPlayers(players);
     setPlayerInControl(playerInControl);
@@ -44,7 +46,16 @@ const Display = () => {
   return (
     <>
       <Header round={round} />
-      <Board clues={clues} />
+      {round > 0 ? (
+        round < 3 ? (
+          <Board clues={clues as JeopardyCategory[]} />
+        ) : (
+          "Display Final Jeopardy! clue"
+        )
+      ) : (
+        ""
+      )}
+
       <div className="leaderboard">
         <p>Leaderboard:</p>
         {players.map((player, index) => {
@@ -57,7 +68,7 @@ const Display = () => {
           );
         })}
       </div>
-      <p>{playerInControl}, you're in control</p>
+      <p>{playerInControl && playerInControl.name}, you're in control</p>
     </>
   );
 };

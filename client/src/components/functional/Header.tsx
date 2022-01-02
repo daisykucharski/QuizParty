@@ -1,6 +1,10 @@
 import React from "react";
 
-function Header({ round }) {
+interface RoundProps {
+  round: number;
+}
+
+function Header({ round }: RoundProps) {
   switch (round) {
     case 1:
       return <h1>Jeopardy!</h1>;
@@ -9,7 +13,7 @@ function Header({ round }) {
     case 3:
       return <h1>Final Jeopardy!</h1>;
     default:
-      return <h1>Unknown round</h1>;
+      return <h1>Loading clues</h1>;
   }
 }
 

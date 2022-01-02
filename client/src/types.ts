@@ -10,14 +10,10 @@ export interface JeopardyCategory {
 }
 
 export interface FinalJeopardyClue {
+  state: "FinalRound";
   category: string;
   question: string;
   answer: string;
-}
-
-export interface DailyDouble {
-  category: number;
-  question: number;
 }
 
 export type Clues = JeopardyCategory[] | FinalJeopardyClue;
