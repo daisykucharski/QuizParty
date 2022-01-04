@@ -7,7 +7,7 @@ import InputForm from "../functional/InputForm";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 
-const Start = () => {
+const StartPage = () => {
   const [socket, setSocket] = useState<Socket | null>(null);
   const [inMenu, setInMenu] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
@@ -148,4 +148,4 @@ const Start = () => {
   );
 };
 
-export default Start;
+export default StartPage;

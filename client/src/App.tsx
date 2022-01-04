@@ -1,9 +1,9 @@
 import React from "react";
 
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import Start from "./components/pages/Start";
-import Display from "./components/pages/Display";
-import Player from "./components/pages/Player";
+import StartPage from "./components/pages/StartPage";
+import DisplayPage from "./components/pages/DisplayPage";
+import PlayerPage from "./components/pages/PlayerPage";
 
 //const ENDPOINT = "http://192.168.56.1:5000"
 
@@ -21,9 +21,9 @@ const App = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Start />} />
-        <Route path="/display" element={<Display />} />
-        <Route path="/player" element={<Player />} />
+        <Route path="/" element={<StartPage />} />
+        <Route path="/display" element={<DisplayPage />} />
+        <Route path="/player" element={<PlayerPage />} />
       </Routes>
     </BrowserRouter>
   );
