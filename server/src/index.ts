@@ -37,12 +37,24 @@ io.on("connection", (socket: Socket) => {
   });
 
   // Allows client to join the given room on the start page
-  socket.on("joining", ({ room }) => {
-    if (rooms.has(room)) {
-      socket.emit("joinConfirmed");
-    } else {
+  socket.on("joining", ({ room, name }) => {
+    const game = rooms.get(room);
+
+    if (!game) {
       socket.emit("errorMessage", "No room with that id found");
+      return;
     }
+
+    // emsures that all names in the game are unique
+    if (game.playerInGame(name)) {
+      socket.emit(
+        "errorMessage",
+        `There is already a player with name ${name}. Please pick another name`
+      );
+      return;
+    }
+
+    socket.emit("joinConfirmed");
   });
 
   // When the display client joins, add them to the room if it exists
