@@ -39,6 +39,14 @@ class Game {
   }
 
   /**
+   * Determines whether the player with the given name is in this game
+   * @param name the name of the player
+   */
+  playerInGame(name: string) {
+    return this.players.some((player) => player.name === name);
+  }
+
+  /**
    * Adds the given player to this game. If there is no player in control yet,
    * then set this player as the player in control
    * @param newPlayer

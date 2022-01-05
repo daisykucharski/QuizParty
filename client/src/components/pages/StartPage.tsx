@@ -67,7 +67,7 @@ const StartPage = () => {
   const handleSubmit = () => {
     if (ensureValidData()) {
       if (choice === "player") {
-        socket?.emit("joining", { room: room });
+        socket?.emit("joining", { room: room, name: name });
       }
     } else {
       displayError("Please fill out name and room id");
