@@ -16,13 +16,7 @@ class Game {
     this.clues = [];
     this.dailyDoubles = [];
     this.players = [];
-    // [
-    //   { name: "1", earnings: 100 },
-    //   { name: "2", earnings: 0 },
-    //   { name: "3", earnings: 200 },
-    // ];
     this.playerInControl = { name: "", earnings: 0 };
-    // { name: "1", earnings: 100 };
     this.round = 0;
   }
 
@@ -84,6 +78,17 @@ class Game {
       (player) => player.name !== playerToRemove.name
     );
     this.players = newPlayers;
+
+    // If the player being is kicked is the player in control, reset the player in control
+    if (playerToRemove.name == this.playerInControl.name) {
+      // if there are players left in the game, choose the next person to have joined
+      // otherwise set the player in control back to nobody
+      if (this.players.length > 0) {
+        this.playerInControl = this.players[0];
+      } else {
+        this.playerInControl = { name: "", earnings: 0 };
+      }
+    }
   }
 
   /**
