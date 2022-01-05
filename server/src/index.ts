@@ -102,7 +102,12 @@ io.on("connection", (socket: Socket) => {
   });
 
   // When the client requests the game to start, start the next round and emit the starting data
-  socket.on("start", () => {
+  socket.on("start", ({ room }) => {
+    const game = rooms.get(room);
+
+    if (!game) {
+      return;
+    }
     game.startNextRound().then(() => io.emit("startRound", game.getData()));
   });
 

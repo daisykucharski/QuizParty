@@ -75,7 +75,14 @@ const DisplayPage = () => {
   };
 
   if (waiting) {
-    return <Waiting />;
+    return (
+      <Waiting
+        room={room}
+        players={players}
+        handleStart={() => socket?.emit("start", { room })}
+        kick={(player: Player) => socket?.emit("kick", { room, player })}
+      />
+    );
   }
 
   return (

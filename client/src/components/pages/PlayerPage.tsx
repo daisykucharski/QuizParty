@@ -31,6 +31,7 @@ const PlayerPage = () => {
 
     socket.on("gameError", () => navigate("/"));
     socket.on("startRound", handleStartRound);
+    socket.on("kick", handleKick);
 
     socket.emit("newPlayerJoin", { room, name });
 
@@ -38,6 +39,12 @@ const PlayerPage = () => {
       socket.disconnect();
     };
   }, []);
+
+  const handleKick = ({ player }: { room: string; player: Player }) => {
+    if (player.name === name) {
+      navigate("/");
+    }
+  };
 
   const handleStartRound = (data: ViewData) => {
     const { players } = data;
