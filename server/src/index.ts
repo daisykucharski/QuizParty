@@ -68,6 +68,7 @@ io.on("connection", (socket: Socket) => {
     }
 
     socket.join(room);
+    game.setDisplaySocketId(socket.id);
   });
 
   // When a new player tries to join a game room, either add them to room they're trying
@@ -123,13 +124,34 @@ io.on("connection", (socket: Socket) => {
     game.startNextRound().then(() => io.emit("startRound", game.getData()));
   });
 
-  socket.on("disconnect", () => {
+  socket.on("disconnecting", () => {
+    console.log("Client disconnected");
+
     // Find the rooms that the socket is connected to
     // the second one is the room for the game
-    const currentRoom = Object.keys(socket.rooms)[1];
+    const connectedRooms = socket.rooms;
+
+    // Finds the game room that the socket is
+    const currentRoom = Array.from(connectedRooms.values()).find(
+      (room) => room !== socket.id
+    );
+
+    // If the socket wasn't in a game room, then we don't need to do
+    // anything to disconnect it
+    if (!currentRoom) {
+      return;
+    }
+
     const game = rooms.get(currentRoom);
 
     if (!game) {
+      return;
+    }
+
+    // if the display client disconnects, then delete the room and notify the clients of the error
+    if (socket.id === game.getDisplaySocketId()) {
+      io.to(currentRoom).emit("gameError");
+      rooms.delete(currentRoom);
       return;
     }
 
@@ -138,7 +160,9 @@ io.on("connection", (socket: Socket) => {
       ?.getPlayers()
       .filter((player) => player.socketid === socket.id)[0];
 
+    // Remove the player from the game and notify the clients of the change
     game?.removePlayer(player);
+    io.to(currentRoom).emit("newPlayers", { players: game.getPlayers() });
 
     // if there are no more players in the game, remove the game from memory
     // and notify the display to return to the starting page

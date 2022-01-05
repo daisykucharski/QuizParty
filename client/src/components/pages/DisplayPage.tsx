@@ -44,7 +44,10 @@ const DisplayPage = () => {
     const socket = socketIOClient(ENDPOINT);
     setSocket(socket);
     socket.on("startRound", handleStartRound);
-    socket.on("gameError", () => navigate("/"));
+    socket.on("gameError", () => {
+      console.log("Game error, returning to home page");
+      navigate("/");
+    });
     socket.on("newPlayers", ({ players }: { players: Player[] }) => {
       setPlayers(players);
     });

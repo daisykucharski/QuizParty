@@ -5,6 +5,7 @@ import { getClues } from "./fetch-questions";
  * Represents one game of Jeopardy!.
  */
 class Game {
+  displaySocketId = "";
   clues: Clues;
   dailyDoubles: DailyDouble[];
   players: Player[];
@@ -23,6 +24,22 @@ class Game {
     this.playerInControl = { name: "", earnings: 0 };
     // { name: "1", earnings: 100 };
     this.round = 0;
+  }
+
+  /**
+   * Stores the id of the socket for the display client of this game
+   * @param displaySocketId the new displaySocketId
+   */
+  setDisplaySocketId(displaySocketId: string) {
+    this.displaySocketId = displaySocketId;
+  }
+
+  /**
+   * Gets the id of the socket for the display cilent of this game
+   * @returns the id of the display socket
+   */
+  getDisplaySocketId(): string {
+    return this.displaySocketId;
   }
 
   /**
