@@ -51,7 +51,7 @@ async function getRegularBoard(
         // The data set does not contain the correct dollar values (in the case of a daily double, it shows what the player earned on that question
         // instead of what that question was originally worth). I could not figure out a clean way to reformat it in the database itself, so I
         // decided to just order it by appropiximate question value in this query and then manually add the values myself
-        "SELECT question, answer FROM question WHERE category_id = $1 ORDER BY CAST(REPLACE(SUBSTRING(question_value, 2), ',', '') as INT)",
+        "SELECT question_id AS id, question, answer FROM question WHERE category_id = $1 ORDER BY CAST(REPLACE(SUBSTRING(question_value, 2), ',', '') as INT)",
         [category.category_id]
       );
       const questions = questionsSelected.rows;
@@ -64,6 +64,7 @@ async function getRegularBoard(
       }
 
       board.push({
+        id: category.category_id,
         category: category.category,
         questions: questionsWithValues,
       });
@@ -91,7 +92,7 @@ async function getFinalJeopardyQuestion(
     const category = categorySelected.rows[0];
 
     const questionSelected = await pool.query(
-      "SELECT question, answer FROM question WHERE category_id = $1",
+      "SELECT question_id AS id, question, answer FROM question WHERE category_id = $1",
       [category.category_id]
     );
     const question = questionSelected.rows[0];

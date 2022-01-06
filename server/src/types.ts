@@ -1,15 +1,19 @@
 export interface Clue {
+  id: number;
   question: string;
   answer: string;
   value: number;
 }
 
 export interface JeopardyCategory {
+  id: number;
   category: string;
-  questions: Clue[];
+  // if a question has been answered, it is replaced with null
+  questions: Array<Clue | null>;
 }
 
 export interface FinalJeopardyClue {
+  id: number;
   category: string;
   question: string;
   answer: string;
@@ -34,4 +38,9 @@ export interface ViewData {
   players: Player[];
   playerInControl: Player;
   round: number;
+}
+
+export interface ChooseClueData {
+  playerInControl: Player;
+  clues: Clues;
 }

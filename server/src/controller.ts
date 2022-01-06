@@ -123,6 +123,10 @@ class GameController {
    * @param data the name of the player and the room they're in
    */
   handleKick = ({ room, player }: { room: string; player: Player }) => {
+    console.log(`Kicking ${player.name}`);
+
+    this.io.to(player.socketid).emit("kick", { room, player });
+
     const game = this.rooms.get(room);
     if (!game) {
       return;
@@ -141,9 +145,16 @@ class GameController {
     if (!game) {
       return;
     }
+
+    // if there aren't any players in the game yet, don't start
+    if (game.getPlayers().length < 1) {
+      return;
+    }
+
     game
       .startNextRound()
-      .then(() => this.io.emit("startRound", game.getData()));
+      .then(() => this.io.emit("startRound", game.getData()))
+      .then(() => this.io.emit("chooseClue", game.getChooseClueData()));
   };
 
   handleDisconnect = (socket: Socket) => {
@@ -181,6 +192,11 @@ class GameController {
     const player = game
       ?.getPlayers()
       .filter((player) => player.socketid === socket.id)[0];
+
+    // if the player doesn't exist, do nothing
+    if (!player) {
+      return;
+    }
 
     // Remove the player from the game and notify the clients of the change
     game?.removePlayer(player);

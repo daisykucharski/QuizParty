@@ -1,4 +1,11 @@
-import { Player, Clues, DailyDouble, ViewData } from "./types";
+import {
+  Player,
+  Clues,
+  DailyDouble,
+  ViewData,
+  JeopardyCategory,
+  ChooseClueData,
+} from "./types";
 import { getClues } from "./fetch-questions";
 
 /**
@@ -46,6 +53,17 @@ class Game {
       players: this.players,
       playerInControl: this.playerInControl,
       round: this.round,
+    };
+  }
+
+  /**
+   * Gets the data from this name necessary for a player to choose a clue to answer
+   * @returns data for the front end
+   */
+  getChooseClueData(): ChooseClueData {
+    return {
+      playerInControl: this.playerInControl,
+      clues: this.clues,
     };
   }
 
