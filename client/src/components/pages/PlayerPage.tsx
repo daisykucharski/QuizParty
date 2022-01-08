@@ -8,7 +8,7 @@ import {
   Player,
   ViewData,
 } from "../../types";
-import { Link } from "react-router-dom";
+import { Error } from "../functional/Error";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 
@@ -109,12 +109,7 @@ class PlayerPage extends Component<{}, PlayerState> {
       this.state;
 
     if (error) {
-      return (
-        <>
-          <h1>An error has occured. Please return to the homepage</h1>
-          <Link to="/" />
-        </>
-      );
+      return <Error />;
     }
 
     if (waiting) {
