@@ -40,6 +40,10 @@ io.on("connection", (socket: Socket) => {
   // When the client requests the game to start, start the next round and emit the starting data
   socket.on("start", (data) => controller.handleStart(data));
 
+  socket.on("clueChosen", (data) =>
+    console.log(data.categoryId + " " + data.questionId)
+  );
+
   socket.on("disconnecting", () => controller.handleDisconnect(socket));
 });
 

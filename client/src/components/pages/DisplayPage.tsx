@@ -22,6 +22,10 @@ type DisplayState = {
   error: boolean;
 };
 
+/**
+ * This component represents the display page of the application. This is
+ * the page that shows the Jeopardy clues
+ */
 class DisplayPage extends Component<{}, DisplayState> {
   constructor(props: {}) {
     super(props);
@@ -65,7 +69,9 @@ class DisplayPage extends Component<{}, DisplayState> {
    * @param data the data for the start of the round
    */
   handleStartRound = ({ clues, players, playerInControl, round }: ViewData) => {
-    this.setState({ clues, players, playerInControl, round });
+    console.log("Handling start round");
+
+    this.setState({ clues, players, playerInControl, round, waiting: false });
   };
 
   render() {

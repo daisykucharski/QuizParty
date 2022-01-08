@@ -9,6 +9,7 @@ import {
   ViewData,
 } from "../../types";
 import { Error } from "../functional/Error";
+import ChooseClue from "../functional/ChooseClue";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 
@@ -40,7 +41,7 @@ class PlayerPage extends Component<{}, PlayerState> {
     };
 
     this.handleKick = this.handleKick.bind(this);
-    this.handleStartRound = this.handleStartRound.bind(this);
+    //this.handleStartRound = this.handleStartRound.bind(this);
     this.handleChooseClue = this.handleChooseClue.bind(this);
   }
 
@@ -51,7 +52,7 @@ class PlayerPage extends Component<{}, PlayerState> {
     });
     this.setState({ socket, room: room as string, name: name as string });
     socket.on("gameError", () => this.setState({ error: true }));
-    socket.on("startRound", this.handleStartRound);
+    //socket.on("startRound", this.handleStartRound);
     socket.on("chooseClue", (data: ChooseClueData) =>
       this.handleChooseClue(data)
     );
@@ -73,22 +74,23 @@ class PlayerPage extends Component<{}, PlayerState> {
     }
   };
 
-  handleStartRound = (data: ViewData) => {
-    const { name } = this.state;
-    const { players } = data;
+  // Probably not necessary
+  // handleStartRound = (data: ViewData) => {
+  //   const { name } = this.state;
+  //   const { players } = data;
 
-    const updatedPlayer = players.find((player) => player.name === name);
+  //   // Determine whether this player has been updated
+  //   const updatedPlayer = players.find((player) => player.name === name);
 
-    if (!updatedPlayer) {
-      return;
-    }
+  //   if (!updatedPlayer) {
+  //     return;
+  //   }
 
-    this.setState({ earnings: updatedPlayer.earnings });
-  };
+  //   this.setState({ earnings: updatedPlayer.earnings });
+  // };
 
   handleChooseClue = ({ playerInControl, clues }: ChooseClueData) => {
     const { name } = this.state;
-    console.log(name);
 
     if (playerInControl.name !== name) {
       this.setState({
@@ -105,7 +107,7 @@ class PlayerPage extends Component<{}, PlayerState> {
   };
 
   render() {
-    const { waiting, name, waitingMessage, isChoosing, clues, error } =
+    const { waiting, name, waitingMessage, isChoosing, clues, error, socket } =
       this.state;
 
     if (error) {
@@ -121,8 +123,12 @@ class PlayerPage extends Component<{}, PlayerState> {
       );
     }
     if (isChoosing) {
-      console.log(clues);
-      return <p>Choosing clue</p>;
+      return (
+        <ChooseClue
+          clues={clues as JeopardyCategory[]}
+          socket={socket as Socket}
+        />
+      );
     }
     return <div></div>;
   }

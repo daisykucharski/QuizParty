@@ -5,8 +5,8 @@ export const Error = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    navigate("/");
+    setTimeout(() => navigate("/"), 1000);
   }, [navigate]);
 
-  return <h1>An error has occured</h1>;
+  return <h1>An error has occured. Returning to the home page</h1>;
 };
