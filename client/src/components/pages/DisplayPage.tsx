@@ -9,6 +9,7 @@ import Header from "../functional/Header";
 import Waiting from "../functional/Waiting";
 import Error from "../functional/Error";
 import DisplayClue from "../functional/DisplayClue";
+import DisplayAnswer from "../functional/DisplayAnswer";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 const socket = socketIOClient(ENDPOINT);
@@ -23,6 +24,10 @@ type DisplayState = {
   error: boolean;
   displayClue: boolean;
   currentClue: string;
+  displayAnswer: boolean;
+  answer: string;
+  playerAnswer: string;
+  confirmAnswer: boolean;
 };
 
 /**
@@ -42,6 +47,10 @@ class DisplayPage extends Component<{}, DisplayState> {
       error: false,
       displayClue: false,
       currentClue: "",
+      displayAnswer: false,
+      answer: "",
+      playerAnswer: "",
+      confirmAnswer: false,
     };
 
     this.handleStartRound = this.handleStartRound.bind(this);
@@ -60,6 +69,9 @@ class DisplayPage extends Component<{}, DisplayState> {
       this.setState({ players: players })
     );
     socket.on("regularQuestion", (data) => this.handleRegularQuesiton(data));
+    socket.on("noAnswer", (answer: string) =>
+      this.setState({ displayClue: false, displayAnswer: true, answer: answer })
+    );
 
     socket.emit("newDisplayJoin", { room });
   }
@@ -78,16 +90,11 @@ class DisplayPage extends Component<{}, DisplayState> {
   };
 
   /**
-   * Updates the state in order to display the given question. After 2 seconds, notify
-   * the other clients that answers can be allowed. This is important to give players the chance
-   * to read the question before buzzing.
+   * Updates the state in order to display the given question.
    * @param data the clue to display
    */
   handleRegularQuesiton = ({ clue }: { clue: string }) => {
-    console.log(clue);
-
     this.setState({ currentClue: clue, displayClue: true });
-    setTimeout(() => socket.emit("allowAnswers"), 2000);
   };
 
   render() {
@@ -101,6 +108,10 @@ class DisplayPage extends Component<{}, DisplayState> {
       clues,
       playerInControl,
       currentClue,
+      displayAnswer,
+      answer,
+      playerAnswer,
+      confirmAnswer,
     } = this.state;
 
     if (error) {
@@ -120,6 +131,16 @@ class DisplayPage extends Component<{}, DisplayState> {
 
     if (displayClue) {
       return <DisplayClue clue={currentClue} />;
+    }
+
+    if (displayAnswer) {
+      return (
+        <DisplayAnswer
+          answer={answer}
+          confirmAnswer={confirmAnswer}
+          playerAnswer={playerAnswer}
+        />
+      );
     }
 
     return (

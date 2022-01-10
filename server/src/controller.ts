@@ -157,20 +157,21 @@ class GameController {
       .then(() => this.io.emit("chooseClue", game.getChooseClueData()));
   };
 
-  handleClueChosen(
-    socket: Socket,
-    {
-      room,
-      categoryId,
-      questionId,
-    }: {
-      room: string;
-      categoryId: number;
-      questionId: number;
-    }
-  ) {
-    console.log("Clue was chosen");
-
+  /**
+   * Handles a player choosing a game. Notifies the game of the clue chosen, notifies the
+   * front end what the question is. After 2 seconds, allow players to buzz in and
+   * if no one buzzes in in 5 seconds notifies the front end of the answer
+   * @param data the room of the game and the clue chosen
+   */
+  handleClueChosen({
+    room,
+    categoryId,
+    questionId,
+  }: {
+    room: string;
+    categoryId: number;
+    questionId: number;
+  }) {
     const game = this.rooms.get(room);
 
     // invalid room code
@@ -182,12 +183,31 @@ class GameController {
     game.chooseClue(categoryId, questionId);
 
     // TODO: Determine whether the clue is a daily double or regular question and emit different event accordingly
-    console.log("regularQuestion emitting");
 
     this.io.to(room).emit("regularQuestion", {
-      clue: game.getClue(categoryId, questionId).question,
+      clue: game.getCurrentClue().question,
     });
+
+    this.allowAnswers(game, room);
   }
+
+  /**
+   * After 2 seconds, allow answers to the question being asked. If the clue is not answered in 5 seconds, emit
+   * a no answer event
+   * @param game the game to allow answers in
+   * @param room the room of the game to allow answers in
+   */
+  allowAnswers = (game: Game, room: string) => {
+    setTimeout(() => {
+      this.io.to(room).emit("allowAnswers");
+      setTimeout(() => {
+        if (!game.clueAnswered()) {
+          game.markAsAnswered();
+          this.io.to(room).emit("noAnswer", game.getCurrentClue().answer);
+        }
+      }, 5000);
+    }, 2000);
+  };
 
   /**
    * Handles a client disconnecting from the server. Removes them from the room they were in.

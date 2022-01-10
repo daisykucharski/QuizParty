@@ -37,9 +37,7 @@ io.on("connection", (socket: Socket) => {
   // When the client requests the game to start, start the next round and emit the starting data
   socket.on("start", (data) => controller.handleStart(data));
 
-  socket.on("clueChosen", (data) => controller.handleClueChosen(socket, data));
-
-  socket.on("allowAnswers", () => console.log("Allowing answers now"));
+  socket.on("clueChosen", (data) => controller.handleClueChosen(data));
 
   socket.on("disconnecting", () => controller.handleDisconnect(socket));
 });

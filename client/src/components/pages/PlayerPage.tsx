@@ -1,10 +1,10 @@
 import React, { Component } from "react";
 import socketIOClient from "socket.io-client";
 import qs from "qs";
-import { Socket } from "socket.io-client";
 import { ChooseClueData, JeopardyCategory, Player } from "../../types";
 import Error from "../functional/Error";
 import ChooseClue from "../functional/ChooseClue";
+import Buzz from "../functional/Buzz";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 const socket = socketIOClient(ENDPOINT);
@@ -18,6 +18,7 @@ type PlayerState = {
   isChoosing: boolean;
   clues: JeopardyCategory[];
   error: boolean;
+  canAnswer: boolean;
 };
 
 class PlayerPage extends Component<{}, PlayerState> {
@@ -32,6 +33,7 @@ class PlayerPage extends Component<{}, PlayerState> {
       isChoosing: false,
       clues: [],
       error: false,
+      canAnswer: false,
     };
 
     this.handleKick = this.handleKick.bind(this);
@@ -53,6 +55,10 @@ class PlayerPage extends Component<{}, PlayerState> {
     socket.on("regularQuestion", () =>
       this.setState({ waiting: true, waitingMessage: "Read the clue" })
     );
+    socket.on("allowAnswers", () =>
+      this.setState({ waiting: false, isChoosing: false, canAnswer: true })
+    );
+    socket.on("noAnswer", () => this.setState({ canAnswer: false }));
 
     socket.emit("newPlayerJoin", { room, name });
   }
@@ -103,8 +109,16 @@ class PlayerPage extends Component<{}, PlayerState> {
   };
 
   render() {
-    const { waiting, room, name, waitingMessage, isChoosing, clues, error } =
-      this.state;
+    const {
+      waiting,
+      room,
+      name,
+      waitingMessage,
+      isChoosing,
+      clues,
+      error,
+      canAnswer,
+    } = this.state;
 
     if (error) {
       return <Error />;
@@ -127,6 +141,11 @@ class PlayerPage extends Component<{}, PlayerState> {
         />
       );
     }
+
+    if (canAnswer) {
+      return <Buzz />;
+    }
+
     return <div></div>;
   }
 }

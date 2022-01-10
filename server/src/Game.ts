@@ -21,6 +21,7 @@ class Game {
   round: number;
   // Represents the current clue in play
   currentClue: {
+    clue: Clue;
     categoryId: number;
     questionId: number;
     // represents whether or not the question has been answered
@@ -77,13 +78,81 @@ class Game {
   }
 
   /**
+   * Determines whether all of the questions on the board have been answered
+   * @returns whether the round is over
+   */
+  isRoundOver = () => {
+    const board = this.clues as JeopardyCategory[];
+    const categoryDone = (category: JeopardyCategory) =>
+      category.questions.every((question) => question === null);
+    return board.every((category) => categoryDone(category));
+  };
+
+  /**
    * Used when a player chooses a clue to answer in the game. Sets the current clue
    * to the question chosen and marks it as unanswered
    * @param categoryId the id of the category of the clue
    * @param questionId the id of the clue itself
    */
   chooseClue(categoryId: number, questionId: number): void {
-    this.currentClue = { categoryId, questionId, answered: false };
+    this.currentClue = {
+      clue: this.getClue(categoryId, questionId),
+      categoryId,
+      questionId,
+      answered: false,
+    };
+  }
+
+  /**
+   *Sets the current clue on the board to null to indicate that it has been answered
+   * @throws an error if the clue doesn't exist on the board
+   */
+  markAsAnswered() {
+    if (!this.currentClue) {
+      return;
+    }
+    const { categoryId, questionId } = this.currentClue;
+    const board = this.clues as JeopardyCategory[];
+
+    const categoryIndex = board.findIndex(
+      (category) => category.id === categoryId
+    );
+    if (categoryIndex === -1) {
+      throw new Error("Category id does not exist");
+    }
+
+    var category = board[categoryIndex];
+
+    const newQuestions = category.questions.map((clue) =>
+      clue && clue.id === questionId ? null : clue
+    );
+
+    category.questions = newQuestions;
+    board[categoryIndex] = category;
+    this.clues = board;
+  }
+
+  /**
+   * Gets the clue that is currently in play.
+   * @returns the current clue in play
+   * @throws an error if there is no clue in play currently
+   */
+  getCurrentClue(): Clue {
+    if (!this.currentClue) {
+      throw new Error("No clue in play");
+    }
+    return this.currentClue.clue;
+  }
+
+  /**
+   * Determines whether the clue currently in play has been answered already
+   * @returns whether the clue has been answered
+   */
+  clueAnswered(): boolean {
+    if (!this.currentClue) {
+      return false;
+    }
+    return this.currentClue.answered;
   }
 
   /**
@@ -144,6 +213,7 @@ class Game {
    */
   getClue(categoryId: number, questionId: number): Clue {
     const board = this.clues as JeopardyCategory[];
+
     const chosenCategory = board.find((category) => category.id === categoryId);
 
     if (!chosenCategory) {
