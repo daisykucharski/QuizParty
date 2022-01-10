@@ -3,8 +3,9 @@ import {
   Clues,
   DailyDouble,
   ViewData,
-  JeopardyCategory,
   ChooseClueData,
+  Clue,
+  JeopardyCategory,
 } from "./types";
 import { getClues } from "./fetch-questions";
 
@@ -18,6 +19,13 @@ class Game {
   players: Player[];
   playerInControl: Player;
   round: number;
+  // Represents the current clue in play
+  currentClue: {
+    categoryId: number;
+    questionId: number;
+    // represents whether or not the question has been answered
+    answered: boolean;
+  } | null;
 
   constructor() {
     this.clues = [];
@@ -25,6 +33,7 @@ class Game {
     this.players = [];
     this.playerInControl = { name: "", earnings: 0 };
     this.round = 0;
+    this.currentClue = null;
   }
 
   /**
@@ -65,6 +74,16 @@ class Game {
       playerInControl: this.playerInControl,
       clues: this.clues,
     };
+  }
+
+  /**
+   * Used when a player chooses a clue to answer in the game. Sets the current clue
+   * to the question chosen and marks it as unanswered
+   * @param categoryId the id of the category of the clue
+   * @param questionId the id of the clue itself
+   */
+  chooseClue(categoryId: number, questionId: number): void {
+    this.currentClue = { categoryId, questionId, answered: false };
   }
 
   /**
@@ -115,6 +134,31 @@ class Game {
    */
   getPlayers(): Player[] {
     return this.players;
+  }
+
+  /**
+   * Gets the clue on the board associated with the given category id and question id.
+   * @param categoryId the id of the category of the clue
+   * @param questionId the id of the question of the clue
+   * @throws an error if the clue doesn't exist on the board
+   */
+  getClue(categoryId: number, questionId: number): Clue {
+    const board = this.clues as JeopardyCategory[];
+    const chosenCategory = board.find((category) => category.id === categoryId);
+
+    if (!chosenCategory) {
+      throw new Error("Category id does not exist");
+    }
+
+    const clue = chosenCategory.questions.find(
+      (clue) => clue && clue.id === questionId
+    );
+
+    if (!clue) {
+      throw new Error("Question id does not exist");
+    }
+
+    return clue;
   }
 
   /**

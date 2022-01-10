@@ -157,6 +157,44 @@ class GameController {
       .then(() => this.io.emit("chooseClue", game.getChooseClueData()));
   };
 
+  handleClueChosen(
+    socket: Socket,
+    {
+      room,
+      categoryId,
+      questionId,
+    }: {
+      room: string;
+      categoryId: number;
+      questionId: number;
+    }
+  ) {
+    console.log("Clue was chosen");
+
+    const game = this.rooms.get(room);
+
+    // invalid room code
+    if (!game) {
+      return;
+    }
+
+    // keep track of the clue chosen by the player
+    game.chooseClue(categoryId, questionId);
+
+    // TODO: Determine whether the clue is a daily double or regular question and emit different event accordingly
+    console.log("regularQuestion emitting");
+
+    this.io.to(room).emit("regularQuestion", {
+      clue: game.getClue(categoryId, questionId).question,
+    });
+  }
+
+  /**
+   * Handles a client disconnecting from the server. Removes them from the room they were in.
+   * If the display client disconnects, the other players are disconected as well. If all
+   * the players in a game disconnect, then the display client discconects as well.
+   * @param socket the socket of the client disconnecting
+   */
   handleDisconnect = (socket: Socket) => {
     console.log("Client disconnected");
 

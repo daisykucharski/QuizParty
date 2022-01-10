@@ -2,12 +2,20 @@ import React, { useState } from "react";
 import { Socket } from "socket.io-client";
 import { Clue, JeopardyCategory } from "../../types";
 
+/**
+ * Gives the player the ability to choose from the available categories and clues.
+ * Once the player chooses both a category and a value, then an clueChosen event is
+ * emitted
+ * @param data the available clues and the socket to emit events with
+ */
 const ChooseClue = ({
   clues,
   socket,
+  room,
 }: {
   clues: JeopardyCategory[];
   socket: Socket;
+  room: string;
 }) => {
   console.log(clues);
 
@@ -37,8 +45,9 @@ const ChooseClue = ({
     return category.questions.filter((question) => question !== null);
   };
 
-  // If the categoryId hasn't been picked yet, have the user pick a category
-  // If the category Id has been picked, then have the user pick a value
+  // If the category hasn't been picked yet, have the user pick a category
+  // If the category has been picked but the question hasn't, then have the user pick a value
+  // If both the category and value have been picked, then the clueChosen event is transmitted
   if (!category) {
     const availableCategories = findAvailableCategories();
     return (
@@ -80,6 +89,7 @@ const ChooseClue = ({
     );
   } else {
     socket.emit("clueChosen", {
+      room,
       categoryId: category.id,
       questionId: question.id,
     });

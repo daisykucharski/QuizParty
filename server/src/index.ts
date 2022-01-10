@@ -1,6 +1,3 @@
-import Game from "./game";
-import { Player } from "./types";
-import { generateRandomCode } from "./utilities";
 import { Socket } from "socket.io";
 import GameController from "./controller";
 const app = require("express")();
@@ -40,9 +37,9 @@ io.on("connection", (socket: Socket) => {
   // When the client requests the game to start, start the next round and emit the starting data
   socket.on("start", (data) => controller.handleStart(data));
 
-  socket.on("clueChosen", (data) =>
-    console.log(data.categoryId + " " + data.questionId)
-  );
+  socket.on("clueChosen", (data) => controller.handleClueChosen(socket, data));
+
+  socket.on("allowAnswers", () => console.log("Allowing answers now"));
 
   socket.on("disconnecting", () => controller.handleDisconnect(socket));
 });
