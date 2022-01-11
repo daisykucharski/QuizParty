@@ -153,8 +153,10 @@ class GameController {
 
     game
       .startNextRound()
-      .then(() => this.io.emit("startRound", game.getData()))
-      .then(() => this.io.emit("chooseClue", game.getChooseClueData()));
+      .then(() => this.io.to(room).emit("updateGame", game.getData()))
+      .then(() =>
+        this.io.to(room).emit("chooseClue", game.getChooseClueData())
+      );
   };
 
   /**
@@ -204,9 +206,33 @@ class GameController {
         if (!game.clueAnswered()) {
           game.markAsAnswered();
           this.io.to(room).emit("noAnswer", game.getCurrentClue().answer);
+          this.updateGame(game, room);
         }
       }, 5000);
     }, 2000);
+  };
+
+  /**
+   * Updates the game after a clue has been answered. After 5 seconds, update the game
+   * and ask the player in control to pick another clue. If all the questions in a round have
+   * been answered, then go to the next round.
+   * @param game the game to update
+   * @param room the room of the game to update
+   */
+  updateGame = (game: Game, room: string) => {
+    setTimeout(() => {
+      const update = () => {
+        this.io.to(room).emit("updateGame", game.getData());
+        // TODO: will need to change this to check if the next round is final Jeopardy
+        // and then send appropriate events based on that
+        this.io.to(room).emit("chooseClue", game.getChooseClueData());
+      };
+      if (game.isRoundOver()) {
+        game.startNextRound().then(update);
+      } else {
+        update();
+      }
+    }, 5000);
   };
 
   /**

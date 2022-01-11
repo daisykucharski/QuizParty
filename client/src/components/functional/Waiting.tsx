@@ -15,7 +15,7 @@ const Waiting = ({
 }) => {
   return (
     <>
-      <h1>Join the game using code {room}</h1>
+      <h1>Join the game on another device using code {room}</h1>
       {players.map((player) => (
         <div className="player" key={uuidv4()}>
           <h3>{player.name}</h3>

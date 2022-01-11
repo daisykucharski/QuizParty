@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import { Socket } from "socket.io-client";
 import socketIOClient from "socket.io-client";
 import qs from "qs";
 import { ViewData, Clues, Player, JeopardyCategory } from "../../types";
@@ -53,7 +52,7 @@ class DisplayPage extends Component<{}, DisplayState> {
       confirmAnswer: false,
     };
 
-    this.handleStartRound = this.handleStartRound.bind(this);
+    this.handleUpdateGame = this.handleUpdateGame.bind(this);
     this.handleRegularQuesiton = this.handleRegularQuesiton.bind(this);
   }
 
@@ -63,7 +62,7 @@ class DisplayPage extends Component<{}, DisplayState> {
     });
     this.setState({ room: room as string });
 
-    socket.on("startRound", this.handleStartRound);
+    socket.on("updateGame", this.handleUpdateGame);
     socket.on("gameError", () => this.setState({ error: true }));
     socket.on("newPlayers", ({ players }: { players: Player[] }) =>
       this.setState({ players: players })
@@ -81,12 +80,20 @@ class DisplayPage extends Component<{}, DisplayState> {
   }
 
   /**
-   * Updates the state to reflect the new data for the start of the next round
-   * Sets waiting to false because a round has started
+   * Updates the state to reflect the new data after events happen
+   * Sets waiting to false because a game is happening
    * @param data the data for the start of the round
    */
-  handleStartRound = ({ clues, players, playerInControl, round }: ViewData) => {
-    this.setState({ clues, players, playerInControl, round, waiting: false });
+  handleUpdateGame = ({ clues, players, playerInControl, round }: ViewData) => {
+    this.setState({
+      clues,
+      players,
+      playerInControl,
+      round,
+      waiting: false,
+      displayClue: false,
+      displayAnswer: false,
+    });
   };
 
   /**

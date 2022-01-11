@@ -127,7 +127,6 @@ class PlayerPage extends Component<{}, PlayerState> {
     if (waiting) {
       return (
         <div>
-          <h2>{name}</h2>
           <p>{waitingMessage}</p>
         </div>
       );
