@@ -4,21 +4,24 @@ import qs from "qs";
 import { ChooseClueData, JeopardyCategory, Player } from "../../types";
 import Error from "../functional/Error";
 import ChooseClue from "../functional/ChooseClue";
-import Buzz from "../functional/Buzz";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 const socket = socketIOClient(ENDPOINT);
+
+enum PlayerStatus {
+  Waiting,
+  IsChoosing,
+  Error,
+  CanAnswer,
+}
 
 type PlayerState = {
   room: string;
   name: string;
   earnings: number;
-  waiting: boolean;
   waitingMessage: string;
-  isChoosing: boolean;
   clues: JeopardyCategory[];
-  error: boolean;
-  canAnswer: boolean;
+  status: PlayerStatus;
 };
 
 class PlayerPage extends Component<{}, PlayerState> {
@@ -28,12 +31,9 @@ class PlayerPage extends Component<{}, PlayerState> {
       room: "",
       name: "",
       earnings: 0,
-      waiting: true,
+      status: PlayerStatus.Waiting,
       waitingMessage: "Waiting for game to start",
-      isChoosing: false,
       clues: [],
-      error: false,
-      canAnswer: false,
     };
 
     this.handleKick = this.handleKick.bind(this);
@@ -46,19 +46,27 @@ class PlayerPage extends Component<{}, PlayerState> {
       ignoreQueryPrefix: true,
     });
     this.setState({ room: room as string, name: name as string });
-    socket.on("gameError", () => this.setState({ error: true }));
+    socket.on("gameError", () => this.setState({ status: PlayerStatus.Error }));
     //socket.on("startRound", this.handleStartRound);
     socket.on("chooseClue", (data: ChooseClueData) =>
       this.handleChooseClue(data)
     );
     socket.on("kick", this.handleKick);
     socket.on("regularQuestion", () =>
-      this.setState({ waiting: true, waitingMessage: "Read the clue" })
+      this.setState({
+        status: PlayerStatus.Waiting,
+        waitingMessage: "Read the clue",
+      })
     );
     socket.on("allowAnswers", () =>
-      this.setState({ waiting: false, isChoosing: false, canAnswer: true })
+      this.setState({ status: PlayerStatus.CanAnswer })
     );
-    socket.on("noAnswer", () => this.setState({ canAnswer: false }));
+    socket.on("noAnswer", () =>
+      this.setState({
+        status: PlayerStatus.Waiting,
+        waitingMessage: "No one answered correctly",
+      })
+    );
 
     socket.emit("newPlayerJoin", { room, name });
   }
@@ -72,7 +80,7 @@ class PlayerPage extends Component<{}, PlayerState> {
 
     const { name } = this.state;
     if (player.name === name) {
-      this.setState({ error: true });
+      this.setState({ status: PlayerStatus.Error });
     }
   };
 
@@ -96,56 +104,48 @@ class PlayerPage extends Component<{}, PlayerState> {
 
     if (playerInControl.name !== name) {
       this.setState({
-        waiting: true,
+        status: PlayerStatus.Waiting,
         waitingMessage: `Waiting for ${playerInControl.name} to choose a clue`,
       });
     } else {
       this.setState({
-        waiting: false,
-        isChoosing: true,
+        status: PlayerStatus.IsChoosing,
         clues: clues as JeopardyCategory[],
       });
     }
   };
 
   render() {
-    const {
-      waiting,
-      room,
-      name,
-      waitingMessage,
-      isChoosing,
-      clues,
-      error,
-      canAnswer,
-    } = this.state;
+    const { status, room, waitingMessage, clues, name } = this.state;
 
-    if (error) {
-      return <Error />;
-    }
+    switch (+status) {
+      case PlayerStatus.Error:
+        return <Error />;
+      case PlayerStatus.Waiting:
+        return (
+          <div>
+            <p>{waitingMessage}</p>
+          </div>
+        );
+      case PlayerStatus.IsChoosing:
+        return (
+          <ChooseClue
+            clues={clues as JeopardyCategory[]}
+            socket={socket}
+            room={room}
+          />
+        );
 
-    if (waiting) {
-      return (
-        <div>
-          <p>{waitingMessage}</p>
-        </div>
-      );
-    }
-    if (isChoosing) {
-      return (
-        <ChooseClue
-          clues={clues as JeopardyCategory[]}
-          socket={socket}
-          room={room}
-        />
-      );
-    }
+      case PlayerStatus.CanAnswer:
+        return (
+          <button onClick={() => socket.emit("buzz", { room, name })}>
+            Buzz
+          </button>
+        );
 
-    if (canAnswer) {
-      return <Buzz />;
+      default:
+        return <div></div>;
     }
-
-    return <div></div>;
   }
 }
 
