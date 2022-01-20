@@ -210,6 +210,8 @@ class GameController {
 
     // If the clue has already been answered, then don't do anything
     if (game.clueAnswered()) {
+      console.log("Clue has already been answered");
+
       return;
     }
 

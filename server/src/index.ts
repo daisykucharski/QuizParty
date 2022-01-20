@@ -41,6 +41,8 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("buzz", (data) => controller.handleBuzz(data));
 
+  socket.on("answer", (data) => console.log(data.answer));
+
   socket.on("disconnecting", () => controller.handleDisconnect(socket));
 });
 

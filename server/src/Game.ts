@@ -133,6 +133,8 @@ class Game {
     this.clues = board;
   }
 
+  checkAnswer(answer: string): boolean {}
+
   /**
    * Gets the clue that is currently in play.
    * @returns the current clue in play
