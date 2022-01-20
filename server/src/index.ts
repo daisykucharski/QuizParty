@@ -39,6 +39,8 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("clueChosen", (data) => controller.handleClueChosen(data));
 
+  socket.on("buzz", (data) => controller.handleBuzz(data));
+
   socket.on("disconnecting", () => controller.handleDisconnect(socket));
 });
 

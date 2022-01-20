@@ -13,17 +13,22 @@ import DisplayAnswer from "../functional/DisplayAnswer";
 const ENDPOINT = "http://192.168.56.1:5000";
 const socket = socketIOClient(ENDPOINT);
 
+enum DisplayStatus {
+  Waiting,
+  Error,
+  DisplayBoard,
+  DisplayClue,
+  DisplayAnswer,
+}
+
 type DisplayState = {
   room: string;
-  waiting: boolean;
+  status: DisplayStatus;
   clues: Clues;
   players: Player[];
   playerInControl: Player;
   round: number;
-  error: boolean;
-  displayClue: boolean;
   currentClue: string;
-  displayAnswer: boolean;
   answer: string;
   playerAnswer: string;
   confirmAnswer: boolean;
@@ -38,15 +43,12 @@ class DisplayPage extends Component<{}, DisplayState> {
     super(props);
     this.state = {
       room: "",
-      waiting: true,
+      status: DisplayStatus.Waiting,
       clues: [],
       players: [],
       playerInControl: { name: "", earnings: 0 },
       round: 0,
-      error: false,
-      displayClue: false,
       currentClue: "",
-      displayAnswer: false,
       answer: "",
       playerAnswer: "",
       confirmAnswer: false,
@@ -63,13 +65,15 @@ class DisplayPage extends Component<{}, DisplayState> {
     this.setState({ room: room as string });
 
     socket.on("updateGame", this.handleUpdateGame);
-    socket.on("gameError", () => this.setState({ error: true }));
+    socket.on("gameError", () =>
+      this.setState({ status: DisplayStatus.Error })
+    );
     socket.on("newPlayers", ({ players }: { players: Player[] }) =>
       this.setState({ players: players })
     );
     socket.on("regularQuestion", (data) => this.handleRegularQuesiton(data));
     socket.on("noAnswer", (answer: string) =>
-      this.setState({ displayClue: false, displayAnswer: true, answer: answer })
+      this.setState({ status: DisplayStatus.DisplayAnswer, answer: answer })
     );
 
     socket.emit("newDisplayJoin", { room });
@@ -90,9 +94,7 @@ class DisplayPage extends Component<{}, DisplayState> {
       players,
       playerInControl,
       round,
-      waiting: false,
-      displayClue: false,
-      displayAnswer: false,
+      status: DisplayStatus.DisplayBoard,
     });
   };
 
@@ -101,78 +103,76 @@ class DisplayPage extends Component<{}, DisplayState> {
    * @param data the clue to display
    */
   handleRegularQuesiton = ({ clue }: { clue: string }) => {
-    this.setState({ currentClue: clue, displayClue: true });
+    this.setState({ currentClue: clue, status: DisplayStatus.DisplayClue });
   };
 
   render() {
     const {
-      displayClue,
-      error,
-      waiting,
+      status,
       room,
       players,
       round,
       clues,
       playerInControl,
       currentClue,
-      displayAnswer,
       answer,
       playerAnswer,
       confirmAnswer,
     } = this.state;
 
-    if (error) {
-      return <Error />;
-    }
+    switch (+status) {
+      case DisplayStatus.Error:
+        return <Error />;
 
-    if (waiting) {
-      return (
-        <Waiting
-          room={room}
-          players={players}
-          handleStart={() => socket.emit("start", { room })}
-          kick={(player: Player) => socket?.emit("kick", { room, player })}
-        />
-      );
-    }
+      case DisplayStatus.Waiting:
+        return (
+          <Waiting
+            room={room}
+            players={players}
+            handleStart={() => socket.emit("start", { room })}
+            kick={(player: Player) => socket?.emit("kick", { room, player })}
+          />
+        );
 
-    if (displayClue) {
-      return <DisplayClue clue={currentClue} />;
-    }
+      case DisplayStatus.DisplayClue:
+        return <DisplayClue clue={currentClue} />;
 
-    if (displayAnswer) {
-      return (
-        <DisplayAnswer
-          answer={answer}
-          confirmAnswer={confirmAnswer}
-          playerAnswer={playerAnswer}
-        />
-      );
-    }
+      case DisplayStatus.DisplayAnswer:
+        return (
+          <DisplayAnswer
+            answer={answer}
+            confirmAnswer={confirmAnswer}
+            playerAnswer={playerAnswer}
+          />
+        );
 
-    return (
-      <>
-        <Header round={round} />
-        {round < 3 ? (
-          <Board clues={clues as JeopardyCategory[]} />
-        ) : (
-          "Display Final Jeopardy! clue"
-        )}
-        <div className="leaderboard">
-          <p>Leaderboard:</p>
-          {players.map((player, index) => {
-            return (
-              <div className="player-score" key={index}>
-                <p>
-                  {player.name} | ${player.earnings}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-        <p>{playerInControl && playerInControl.name}, you're in control</p>
-      </>
-    );
+      case DisplayStatus.DisplayBoard:
+        return (
+          <>
+            <Header round={round} />
+            {round < 3 ? (
+              <Board clues={clues as JeopardyCategory[]} />
+            ) : (
+              "Display Final Jeopardy! clue"
+            )}
+            <div className="leaderboard">
+              <p>Leaderboard:</p>
+              {players.map((player, index) => {
+                return (
+                  <div className="player-score" key={index}>
+                    <p>
+                      {player.name} | ${player.earnings}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+            <p>{playerInControl && playerInControl.name}, you're in control</p>
+          </>
+        );
+      default:
+        return <div></div>;
+    }
   }
 }
 

@@ -111,6 +111,7 @@ class Game {
     if (!this.currentClue) {
       return;
     }
+    this.currentClue.answered = true;
     const { categoryId, questionId } = this.currentClue;
     const board = this.clues as JeopardyCategory[];
 

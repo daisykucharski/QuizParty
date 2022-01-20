@@ -194,6 +194,30 @@ class GameController {
   }
 
   /**
+   * Handles a player buzzing. If the question has already been answered, then do nothing.
+   * Otherwise, mark the quesiton as answered and emit event to allow the user that buzzed to
+   * answer the question
+   * @param data the room and the name of the player that buzzed
+   */
+  handleBuzz({ room, name }: { room: string; name: string }) {
+    console.log(`${name} in room ${room} buzzed`);
+
+    const game = this.rooms.get(room);
+
+    if (!game) {
+      return;
+    }
+
+    // If the clue has already been answered, then don't do anything
+    if (game.clueAnswered()) {
+      return;
+    }
+
+    game.markAsAnswered();
+    this.io.to(room).emit("answerQuestion", { names: [name] });
+  }
+
+  /**
    * After 2 seconds, allow answers to the question being asked. If the clue is not answered in 5 seconds, emit
    * a no answer event
    * @param game the game to allow answers in
