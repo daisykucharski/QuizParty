@@ -5,6 +5,7 @@ import { ChooseClueData, JeopardyCategory, Player } from "../../types";
 import Error from "../functional/Error";
 import ChooseClue from "../functional/ChooseClue";
 import AnswerQuestion from "../functional/AnswerQuestion";
+import ConfirmAnswer from "../functional/ConfirmAnswer";
 
 const ENDPOINT = "http://192.168.56.1:5000";
 const socket = socketIOClient(ENDPOINT);
@@ -15,6 +16,7 @@ enum PlayerStatus {
   Error,
   Buzz,
   AnswerQuestion,
+  ConfirmAnswer,
 }
 
 type PlayerState = {
@@ -41,6 +43,7 @@ class PlayerPage extends Component<{}, PlayerState> {
     this.handleKick = this.handleKick.bind(this);
     this.handleChooseClue = this.handleChooseClue.bind(this);
     this.handleAnswerQuestion = this.handleAnswerQuestion.bind(this);
+    this.handleConfirmAnswer = this.handleConfirmAnswer.bind(this);
   }
 
   componentDidMount() {
@@ -53,6 +56,7 @@ class PlayerPage extends Component<{}, PlayerState> {
       this.handleChooseClue(data)
     );
     socket.on("kick", this.handleKick);
+
     socket.on("regularQuestion", () =>
       this.setState({
         status: PlayerStatus.Waiting,
@@ -69,7 +73,16 @@ class PlayerPage extends Component<{}, PlayerState> {
       })
     );
 
+    socket.on("correctAnswer", () =>
+      this.setState({
+        status: PlayerStatus.Waiting,
+        waitingMessage: "Answer was correct",
+      })
+    );
+
     socket.on("answerQuestion", (data) => this.handleAnswerQuestion(data));
+
+    socket.on("confirmAnswer", (data) => this.handleConfirmAnswer(data));
 
     socket.emit("newPlayerJoin", { room, name });
   }
@@ -89,6 +102,30 @@ class PlayerPage extends Component<{}, PlayerState> {
     const { name } = this.state;
     if (player.name === name) {
       this.setState({ status: PlayerStatus.Error });
+    }
+  };
+
+  /**
+   * If the player just answered the question, wait for other players
+   * to confirm their answer. Otherwise, confirm the player's answer
+   * @param player name of player in control
+   */
+  handleConfirmAnswer = ({
+    answerer,
+  }: {
+    answerer: Player;
+    correctAnswer: string;
+    playerAnswer: string;
+  }) => {
+    console.log("Received confirm answer event");
+
+    if (answerer.name === this.state.name) {
+      this.setState({
+        status: PlayerStatus.Waiting,
+        waitingMessage: "Waiting for players to confirm answer",
+      });
+    } else {
+      this.setState({ status: PlayerStatus.ConfirmAnswer });
     }
   };
 
@@ -166,6 +203,22 @@ class PlayerPage extends Component<{}, PlayerState> {
         return (
           <AnswerQuestion
             onSubmit={(answer) => socket.emit("answer", { room, answer })}
+          />
+        );
+
+      case PlayerStatus.ConfirmAnswer:
+        return (
+          <ConfirmAnswer
+            handleCorrect={() => {
+              console.log("Player was correct");
+
+              socket.emit("playerCorrect", room);
+            }}
+            handleIncorrect={() => {
+              console.log("Player was incorrect");
+
+              socket.emit("playerIncorrect", room);
+            }}
           />
         );
 

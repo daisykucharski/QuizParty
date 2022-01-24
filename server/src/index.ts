@@ -41,7 +41,13 @@ io.on("connection", (socket: Socket) => {
 
   socket.on("buzz", (data) => controller.handleBuzz(data));
 
-  socket.on("answer", (data) => console.log(data.answer));
+  socket.on("answer", (data) => controller.handleAnswer(data));
+
+  socket.on("playerCorrect", (data) => controller.handlePlayerCorrect(data));
+
+  socket.on("playerIncorrect", (data) =>
+    controller.handlePlayerIncorrect(data)
+  );
 
   socket.on("disconnecting", () => controller.handleDisconnect(socket));
 });

@@ -216,8 +216,79 @@ class GameController {
     }
 
     game.markAsAnswered();
+    game.setPlayerAnswering(name);
     this.io.to(room).emit("answerQuestion", { names: [name] });
   }
+
+  /**
+   * Handles when a player submits an answer for a question. If the answer is exactly correct,
+   * then notify the front end of that. Otherwise, have the players confirm the correct answer
+   * @param data the room of the answer and what it was
+   */
+  handleAnswer({ room, answer }: { room: string; answer: string }) {
+    console.log(`Answer ${answer} in room ${room}`);
+    const game = this.rooms.get(room);
+
+    if (!game) {
+      return;
+    }
+
+    game.markAsAnswered();
+    console.log(`Correct answer is ${game.getCurrentClue().answer}`);
+
+    if (game.checkAnswer(answer)) {
+      this.io.to(room).emit("correctAnswer", {
+        answer: game.getCurrentClue().answer,
+        answerer: game.getPlayerAnswering(),
+      });
+      game.playerWasCorrect();
+      this.updateGame(game, room);
+    } else {
+      console.log("Sending confirm answer event");
+
+      this.io.to(room).emit("confirmAnswer", {
+        correctAnswer: game.getCurrentClue().answer,
+        playerAnswer: answer,
+        answerer: game.getPlayerAnswering(),
+      });
+    }
+  }
+
+  /**
+   * Handles the case when the player was determined to be correct. Updates their score and
+   * moves on to the next clue
+   * @param room the room of the game being played
+   */
+  handlePlayerCorrect = (room: string) => {
+    console.log("Player was correct");
+
+    const game = this.rooms.get(room);
+
+    if (!game) {
+      return;
+    }
+
+    game.playerWasCorrect();
+    this.updateGame(game, room);
+  };
+
+  /**
+   * Handles the case when the player was determined to be incorrect. Updates their score and
+   * moves on to the next clue
+   * @param room the room of the game being played
+   */
+  handlePlayerIncorrect = (room: string) => {
+    console.log("Player was not correct");
+
+    const game = this.rooms.get(room);
+
+    if (!game) {
+      return;
+    }
+
+    game.playerWasIncorrect();
+    this.updateGame(game, room);
+  };
 
   /**
    * After 2 seconds, allow answers to the question being asked. If the clue is not answered in 5 seconds, emit
@@ -239,7 +310,7 @@ class GameController {
   };
 
   /**
-   * Updates the game after a clue has been answered. After 5 seconds, update the game
+   * Updates the game after a clue has been answered. After 2 seconds, update the game
    * and ask the player in control to pick another clue. If all the questions in a round have
    * been answered, then go to the next round.
    * @param game the game to update
@@ -258,7 +329,7 @@ class GameController {
       } else {
         update();
       }
-    }, 5000);
+    }, 2000);
   };
 
   /**

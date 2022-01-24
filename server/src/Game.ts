@@ -18,6 +18,7 @@ class Game {
   dailyDoubles: DailyDouble[];
   players: Player[];
   playerInControl: Player;
+  playerAnswering: Player;
   round: number;
   // Represents the current clue in play
   currentClue: {
@@ -33,6 +34,7 @@ class Game {
     this.dailyDoubles = [];
     this.players = [];
     this.playerInControl = { name: "", earnings: 0 };
+    this.playerAnswering = { name: "", earnings: 0 };
     this.round = 0;
     this.currentClue = null;
   }
@@ -104,6 +106,28 @@ class Game {
   }
 
   /**
+   * Set the player answering to the player with the given name
+   * @param name the name of the player answering
+   */
+  setPlayerAnswering(name: string) {
+    const player = this.players.find((player) => player.name === name);
+
+    if (!player) {
+      return;
+    }
+
+    this.playerAnswering = player;
+  }
+
+  /**
+   * Gets the player currently answering a question
+   * @returns the player currently answering a question
+   */
+  getPlayerAnswering(): Player {
+    return this.playerAnswering;
+  }
+
+  /**
    *Sets the current clue on the board to null to indicate that it has been answered
    * @throws an error if the clue doesn't exist on the board
    */
@@ -133,7 +157,39 @@ class Game {
     this.clues = board;
   }
 
-  checkAnswer(answer: string): boolean {}
+  /**
+   * If the player answered correctly, then increase their earnings appropriately and make them
+   * the player in control
+   */
+  playerWasCorrect() {
+    this.playerAnswering.earnings += this.getCurrentClue().value;
+    this.playerInControl = this.playerAnswering;
+  }
+
+  /**
+   * If the player answered incorrectly, then decrease their earnings appropriately
+   */
+  playerWasIncorrect() {
+    this.playerAnswering.earnings = Math.max(
+      this.playerAnswering.earnings - this.getCurrentClue().value,
+      0
+    );
+  }
+
+  /**
+   * Detemines whether the given answer is exactly correct. If it is not,
+   * then return false and players will determine if it was correct.
+   * @param answer the player's answer
+   */
+  checkAnswer(answer: string): boolean {
+    if (!this.currentClue) {
+      return false;
+    }
+    // Check whether the user answer contains the correct answer. Lowercases both to ensure consistency
+    return answer
+      .toLowerCase()
+      .includes(this.currentClue.clue.answer.toLowerCase());
+  }
 
   /**
    * Gets the clue that is currently in play.
@@ -206,6 +262,14 @@ class Game {
    */
   getPlayers(): Player[] {
     return this.players;
+  }
+
+  /**
+   * Gets the player in control
+   * @returns the player in control
+   */
+  getPlayerInControl(): Player {
+    return this.playerInControl;
   }
 
   /**

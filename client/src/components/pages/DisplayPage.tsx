@@ -30,8 +30,9 @@ type DisplayState = {
   round: number;
   currentClue: string;
   answer: string;
+  answerer: Player;
   playerAnswer: string;
-  confirmAnswer: boolean;
+  answerStatus: "noAnswer" | "correct" | "confirmAnswer";
 };
 
 /**
@@ -50,8 +51,9 @@ class DisplayPage extends Component<{}, DisplayState> {
       round: 0,
       currentClue: "",
       answer: "",
+      answerer: { name: "", earnings: 0 },
       playerAnswer: "",
-      confirmAnswer: false,
+      answerStatus: "noAnswer",
     };
 
     this.handleUpdateGame = this.handleUpdateGame.bind(this);
@@ -73,7 +75,42 @@ class DisplayPage extends Component<{}, DisplayState> {
     );
     socket.on("regularQuestion", (data) => this.handleRegularQuesiton(data));
     socket.on("noAnswer", (answer: string) =>
-      this.setState({ status: DisplayStatus.DisplayAnswer, answer: answer })
+      this.setState({
+        status: DisplayStatus.DisplayAnswer,
+        answer: answer,
+        answerStatus: "noAnswer",
+      })
+    );
+    socket.on(
+      "correctAnswer",
+      ({ answer, answerer }: { answer: string; answerer: Player }) =>
+        this.setState({
+          status: DisplayStatus.DisplayAnswer,
+          answer: answer,
+          answerStatus: "correct",
+          answerer: answerer,
+        })
+    );
+
+    socket.on(
+      "confirmAnswer",
+      ({
+        correctAnswer,
+        playerAnswer,
+        answerer,
+      }: {
+        correctAnswer: string;
+        playerAnswer: string;
+        answerer: Player;
+      }) => {
+        this.setState({
+          status: DisplayStatus.DisplayAnswer,
+          answer: correctAnswer,
+          playerAnswer,
+          answerStatus: "confirmAnswer",
+          answerer: answerer,
+        });
+      }
     );
 
     socket.emit("newDisplayJoin", { room });
@@ -117,7 +154,8 @@ class DisplayPage extends Component<{}, DisplayState> {
       currentClue,
       answer,
       playerAnswer,
-      confirmAnswer,
+      answerStatus,
+      answerer,
     } = this.state;
 
     switch (+status) {
@@ -141,7 +179,8 @@ class DisplayPage extends Component<{}, DisplayState> {
         return (
           <DisplayAnswer
             answer={answer}
-            confirmAnswer={confirmAnswer}
+            answerer={answerer}
+            answerStatus={answerStatus}
             playerAnswer={playerAnswer}
           />
         );
