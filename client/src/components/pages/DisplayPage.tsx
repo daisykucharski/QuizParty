@@ -10,7 +10,7 @@ import Error from "../functional/Error";
 import DisplayClue from "../functional/DisplayClue";
 import DisplayAnswer from "../functional/DisplayAnswer";
 
-const ENDPOINT = "http://192.168.56.1:5000";
+const ENDPOINT = "http://localhost:5000";
 const socket = socketIOClient(ENDPOINT);
 
 enum DisplayStatus {

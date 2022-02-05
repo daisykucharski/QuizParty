@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import NavButton from "../functional/NavButton";
 import InputForm from "../functional/InputForm";
 
-const ENDPOINT = "http://192.168.56.1:5000";
+const ENDPOINT = "http://localhost:5000";
 
 const StartPage = () => {
   const [socket, setSocket] = useState<Socket | null>(null);

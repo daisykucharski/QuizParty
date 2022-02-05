@@ -7,7 +7,7 @@ import ChooseClue from "../functional/ChooseClue";
 import AnswerQuestion from "../functional/AnswerQuestion";
 import ConfirmAnswer from "../functional/ConfirmAnswer";
 
-const ENDPOINT = "http://192.168.56.1:5000";
+const ENDPOINT = "http://localhost:5000";
 const socket = socketIOClient(ENDPOINT);
 
 enum PlayerStatus {
@@ -209,16 +209,8 @@ class PlayerPage extends Component<{}, PlayerState> {
       case PlayerStatus.ConfirmAnswer:
         return (
           <ConfirmAnswer
-            handleCorrect={() => {
-              console.log("Player was correct");
-
-              socket.emit("playerCorrect", room);
-            }}
-            handleIncorrect={() => {
-              console.log("Player was incorrect");
-
-              socket.emit("playerIncorrect", room);
-            }}
+            handleCorrect={() => socket.emit("playerCorrect", room)}
+            handleIncorrect={() => socket.emit("playerIncorrect", room)}
           />
         );
 
